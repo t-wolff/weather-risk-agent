@@ -1,0 +1,44 @@
+# Closure days, thresholds and the blend are judgement calls, not sourced figures.
+# Change method_version whenever a value changes, so old snapshots aren't compared with new ones.
+method_version: "1.1"
+
+blend:
+  nri: 0.7
+  observed: 0.3
+
+observed_window_years: 5
+
+groups:
+  winter:
+    components:
+      winter_weather: {nri_field: WNTW, closure_days: 0.25}
+      ice_storm: {nri_field: ISTM, closure_days: 2}
+    observed: {metric: snowfall, threshold: 5}
+  hurricane:
+    components:
+      hurricane: {nri_field: HRCN, closure_days: 7}
+    observed: null
+  flood:
+    components:
+      inland_flood: {nri_field: IFLD, closure_days: 0.5}
+      coastal_flood: {nri_field: CFLD, closure_days: 0.5}
+    observed: {metric: precipitation, threshold: 50}
+  severe_storm:
+    components:
+      strong_wind: {nri_field: SWND, closure_days: 0.25}
+      tornado: {nri_field: TRND, closure_days: 1}
+      hail: {nri_field: HAIL, closure_days: 0.1}
+    observed: {metric: gust, threshold: 90}
+
+tiers:
+  high: 8
+  medium: 4
+
+sensitivity_factors: [0.5, 1.5]
+
+catastrophic_flags:
+  hazards: {wildfire: WFIR, earthquake: ERQK}
+  ratings: ["Relatively High", "Very High"]
+
+alerts:
+  min_change_pct: 5

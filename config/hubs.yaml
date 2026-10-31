@@ -1,0 +1,25 @@
+# Illustrative hubs: the brief gives no real list. Coordinates are city centres.
+hubs:
+  - {id: chicago, name: Chicago, state: IL, region: Midwest, lat: 41.88, lon: -87.63, fips: "17031"}
+  - {id: minneapolis, name: Minneapolis, state: MN, region: Midwest, lat: 44.98, lon: -93.27, fips: "27053"}
+  - {id: detroit, name: Detroit, state: MI, region: Midwest, lat: 42.33, lon: -83.05, fips: "26163"}
+  - {id: kansas_city, name: Kansas City, state: MO, region: Midwest, lat: 39.10, lon: -94.58, fips: "29095"}
+  - {id: indianapolis, name: Indianapolis, state: IN, region: Midwest, lat: 39.77, lon: -86.16, fips: "18097"}
+  - {id: st_louis, name: St. Louis, state: MO, region: Midwest, lat: 38.63, lon: -90.20, fips: "29510"}
+  - {id: columbus, name: Columbus, state: OH, region: Midwest, lat: 39.96, lon: -83.00, fips: "39049"}
+  - {id: miami, name: Miami, state: FL, region: South, lat: 25.76, lon: -80.19, fips: "12086"}
+  - {id: houston, name: Houston, state: TX, region: South, lat: 29.76, lon: -95.37, fips: "48201"}
+  - {id: dallas, name: Dallas, state: TX, region: South, lat: 32.78, lon: -96.80, fips: "48113"}
+  - {id: atlanta, name: Atlanta, state: GA, region: South, lat: 33.75, lon: -84.39, fips: "13121"}
+  - {id: memphis, name: Memphis, state: TN, region: South, lat: 35.15, lon: -90.05, fips: "47157"}
+  - {id: new_orleans, name: New Orleans, state: LA, region: South, lat: 29.95, lon: -90.07, fips: "22071"}
+  - {id: charlotte, name: Charlotte, state: NC, region: South, lat: 35.23, lon: -80.84, fips: "37119"}
+  - {id: denver, name: Denver, state: CO, region: West, lat: 39.74, lon: -104.99, fips: "08031"}
+  - {id: phoenix, name: Phoenix, state: AZ, region: West, lat: 33.45, lon: -112.07, fips: "04013"}
+  - {id: los_angeles, name: Los Angeles, state: CA, region: West, lat: 34.05, lon: -118.24, fips: "06037"}
+  - {id: san_diego, name: San Diego, state: CA, region: West, lat: 32.72, lon: -117.16, fips: "06073"}
+  - {id: san_francisco, name: San Francisco, state: CA, region: West, lat: 37.77, lon: -122.42, fips: "06075"}
+  - {id: seattle, name: Seattle, state: WA, region: West, lat: 47.61, lon: -122.33, fips: "53033",
+     caveat: "King County extends into the Cascades, so county winter frequency likely overstates the city. Its county figure is far above the heavy snow days observed at the city grid point."}
+  - {id: newark, name: Newark, state: NJ, region: Northeast, lat: 40.74, lon: -74.17, fips: "34013"}
+  - {id: boston, name: Boston, state: MA, region: Northeast, lat: 42.36, lon: -71.06, fips: "25025"}

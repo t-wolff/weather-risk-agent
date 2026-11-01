@@ -131,30 +131,35 @@ hub_edd   = sum of the 4 hazard groups
 
 Tiers are High ≥ 8, Medium 4–8 and Low < 4. All parameters live in `config/scoring.yaml` with a version number.
 
-**Uncertainty:** each ranking is recomputed with each closure-day assumption at ±50%, and hubs report a rank range such as "#2, range 1–3".
+**Uncertainty:** Hubs report a rank range such as "#2, range 1–3". Not sure how much thought should be given to catastrophes that there is no way to guard against, as putting more money into enforcing the hub would not really help in many events. 
 
-**Known limitation:** EDD counts closure days, not damage, so rare but costly hurricanes weigh less than their financial impact would suggest. The hurricane breakdown is always available for that reason.
+**Known limitation:** EDD counts closure days, not damage, so rare but costly hurricanes weigh less than their financial impact would suggest. The hurricane breakdown is always available for that reason, as mentioned above.
 
 ## Repository structure
 
 ```
 weather-risk-agent/
 ├── README.md
+├── Makefile         install, warm-cache, dev, test, evals, evals-free
+├── pyproject.toml   dependencies, with uv.lock
+├── .env.example     settings template, real values go in .env (ignored)
 ├── docs/DESIGN.md
 ├── config/          hubs.yaml, scoring.yaml
 ├── data/            nri_snapshot.csv (committed), SQLite file (ignored)
 ├── app/
+│   ├── config.py    settings, hub and scoring config loading
 │   ├── api/         FastAPI routes and identity
 │   ├── agent/       loop, prompts, schemas, grounding, flags
 │   ├── llm/         base interface, Anthropic and OpenAI adapters
-│   ├── skills/      ranking, comparison, explanation, weather_statistics
+│   ├── skills/      ranking, comparison, explanation, weather_statistics,
+│   │                writing-skills (authoring guide, never loaded by the agent)
 │   ├── tools/       tool functions and registry
 │   ├── scoring/     engine, sensitivity (pure)
 │   ├── data/        store, schema, NRI, Open-Meteo, OpenFEMA, NWS clients
 │   └── jobs/        warm cache, refresh, alerts
 ├── ui/              Streamlit app
-├── evals/           cases and runner
-└── tests/           unit tests, no network
+├── evals/           cases, runner, audit (fixed checklist on every answer)
+└── tests/           unit tests and scripted evals, no network or LLM
 ```
 
 ## Data storage: SQLite
@@ -170,12 +175,30 @@ weather-risk-agent/
 | `conversations` | conversation ID, hashed client ID, created-at time |
 | `turns` | message, answer, trace JSON, LLM messages, flag, hashed IP |
 
-**Why SQLite:** the data is small, with at most about 450 cache records plus scores and chats. Queries are simple lookups with no complex joins, there is one writer, and it runs from a clone with nothing to install.
+### Database choice
+
+SQLite was chosen after comparing it with MongoDB against what the database has to support:
+
+| Requirement | How SQLite meets it |
+|---|---|
+| Cache weather data | One record per hub and year in `weather_cache`, with daily values as JSON, instead of about 146,000 daily rows |
+| Keep chat history without a login | `conversations` and `turns` are stored under a hashed client ID |
+| Keep one client's chats away from another | Every conversation query requires the client's hash, and another client's conversation returns 404 |
+| Record reasoning, tools and skills for later evaluation | The decision trace is a JSON column on `turns` |
+| Flag misuse as destructive, abusive or out of scope | Flags are plain columns on `turns`, so they are easy to count and filter |
+
+**Why SQLite won:**
+- **It runs from a clone.** It is one file with no server and nothing to install, and running locally is the priority.
+- **The data is small.** There are at most about 450 cache records, plus scores and chats.
+- **The queries are simple.** The database mostly holds history, with lookups rather than complex joins, and there is one writer.
+- **JSON columns cover the nested data.** Traces keep their shape, while the fields people filter on stay as normal columns.
 
 **Why not the alternatives:**
-- **MongoDB** is the closest alternative, and a better fit for nested traces and for redeploys. It lost because it adds Docker or Atlas setup, and running locally is the priority.
-- **A vector database** has nothing to retrieve, because numbers should come from queries, not similarity search.
-- **Postgres** adds operational work with no benefit at this size. It is the natural move for heavier multi-user use.
+- **MongoDB** was the real contender. Scoring runs in Python on cached records, so SQL's aggregation adds little and most of the data is shaped like documents. It also fits nested traces better, copes more easily as they change, and Atlas survives redeploys. It lost on setup alone: it needs Docker or Atlas, and a demo on Atlas needs network access.
+- **A vector database** has nothing to retrieve, because there are no unstructured documents and numbers should come from queries, not similarity search.
+- **Postgres** adds operational work with no benefit at this size.
+
+**What this costs:** SQLite suits one API process, and hosted platforms can wipe its file. Heavier multi-user use is the point to move to Postgres, or to MongoDB if traces become the main workload.
 
 **Raw weather is fetched once, then cached per hub and year.** Finished years never change, so they stay valid and evals stay repeatable. The daily job refreshes the current year. Rankings read stored snapshots, so they don't trigger 22 API calls. `make warm-cache` prepares a demo that doesn't depend on third-party APIs. Open-Meteo's free tier limits request weight, so a first warm-up takes several minutes, waits out rate limits and resumes where it stopped. All access goes through `app/data/store.py`, so changing database touches one file.
 
